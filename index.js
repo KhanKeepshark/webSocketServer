@@ -1,8 +1,11 @@
-const ws = require('ws');
+const express = require('express');
+const app = express();
+const WSServer = require('express-ws')(app);
+const aWss = WSServer.getWss();
 
-const wss = new ws.Server({ port: 8080 }, () => console.log('Server started'));
+const PORT = process.env.PORT || 8080;
 
-wss.on('connection', ws => {
+app.ws('/', (ws, req) => {
 
     ws.on('message', message => {
         message = JSON.parse(message);
@@ -20,9 +23,11 @@ wss.on('connection', ws => {
     });
 });
 
+app.listen(PORT, () => console.log(`Server started on port ${PORT}`))
+
 const broadcastConnection = (message) => {
     
-    wss.clients.forEach(client => {
+    aWss.clients.forEach(client => {
         if (client.id === message.roomId) {
             
             client.send(JSON.stringify(message));
